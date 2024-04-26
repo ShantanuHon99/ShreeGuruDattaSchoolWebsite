@@ -69,8 +69,7 @@ nav ul li a:hover {
     background-color:#f0f0f0;
     min-width: 160px;
     z-index: 1;
-    
-     /* Align dropdown to the left */
+  
   }
 
   .dropdown:hover .dropdown-content {

@@ -14,3 +14,30 @@ body{
     color: rgb(255, 255, 255);
     font-size: 50px;
 }
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+  }
+  
+  .card {
+    width: 30%;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: white; /* Card background color */
+  }
+  
+  .card p {
+    color: orange; 
+  }
+  
+  
+  
+  .card a {
+    display: block;
+    margin-top: 10px;
+    text-decoration: none;
+   
+  }
