@@ -22,7 +22,9 @@ body{
   }
   
   .card {
-    width: 30%;
+    display: flex;
+    justify-content: center;
+    width: 20%;
     border: 1px solid #ccc;
     border-radius: 5px;
     padding: 10px;
@@ -30,7 +32,7 @@ body{
   }
   
   .card p {
-    color: orange; 
+    color: rgb(0, 0, 0); 
   }
   
   
