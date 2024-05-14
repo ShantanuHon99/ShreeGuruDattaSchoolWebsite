@@ -174,11 +174,18 @@ nav ul li a:hover {
     display: none;
   }
 }
-
 #gallery {
-    background-color: #ebebeb;
-    padding: 50px 20px;
-  }
+  background-color: #ebebeb;
+  padding: 50px 20px; /* Default padding */
+  height: auto; /* Set height to auto */
+}
+
+#gallery img {
+  max-width: 100%;
+  height: auto; 
+}
+
+
 
   /* Image grid styles */
   .image-grid {
@@ -213,3 +220,27 @@ nav ul li a:hover {
         height: fit-content;
       }
   }
+
+  
+/* Regular screen styles */
+#gallery h3 {
+  font-size: 40px; 
+  color: #ff5100; 
+  margin-top: 30px; 
+}
+
+/* Media query for smaller screens */
+@media only screen and (max-width: 600px) {
+  #gallery h3 {
+      font-size: 30px;
+      margin-top: 10px;
+  }
+}
+
+/* Media query for even smaller screens */
+@media only screen and (max-width: 400px) {
+  #gallery h3 {
+      font-size: 20px; 
+      margin-top: 10px;
+  }
+}
