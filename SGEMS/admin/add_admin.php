@@ -1,7 +1,5 @@
 <?php
-session_start(); 
-
-if (isset($_POST["submit"])) {
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $servername = "localhost";
     $username = "shreegur_user";
     $password = "USER@123321";
@@ -13,24 +11,49 @@ if (isset($_POST["submit"])) {
         die("Connection failed: " . $con->connect_error);
     }
 
+    $superadmin_name = 'SGEMS_admin'; 
+    $sql_fetch_password = "SELECT password FROM admin WHERE name = '$superadmin_name'";
+    $result = $con->query($sql_fetch_password);
+
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $superadmin_password = $row["password"];
+    } else {
+        echo "SuperAdmin not found.";
+        $con->close();
+        exit;
+    }
+
+    $admin_password_from_form = $_POST["admin_password"];
     $username = $_POST["username"];
     $password = $_POST["password"];
 
-    // Use prepared statements to prevent SQL injection
-    $stmt = $con->prepare("SELECT * FROM admin WHERE name=? AND password=?");
-    $stmt->bind_param("ss", $username, $password);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $sql_check_username = "SELECT * FROM admin WHERE name = '$username'";
+    $result_username = $con->query($sql_check_username);
 
-    if ($result->num_rows > 0) {
-        $_SESSION["loggedin"] = true;
-        header("Location: dashboard.php");
-        exit();
+    if ($result_username->num_rows > 0) {
+        echo "<script>alert('Username already exists. Please choose a different username.');</script>";
     } else {
-        $loginError = "Invalid username or password.";
+        if ($admin_password_from_form !== $superadmin_password) {
+            echo "<script>alert('Invalid admin password.');</script>";
+            header("Location: login.php");
+            $con->close();
+            exit;
+        }
+
+        $sql_insert_subadmin = "INSERT INTO admin (name, password) VALUES (?, ?)";
+        $stmt = $con->prepare($sql_insert_subadmin);
+        $stmt->bind_param("ss", $username, $password);
+
+        if ($stmt->execute()) {
+            echo "<script>alert('Sub-Admin created successfully...');</script>";
+            echo "<script>window.location.href = 'login.php';</script>"; 
+            exit;
+        } else {
+            echo "<script>alert('Error....');</script>";
+        }
     }
 
-    $stmt->close();
     $con->close();
 }
 ?>
@@ -42,8 +65,14 @@ if (isset($_POST["submit"])) {
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
     <title>Admin Panel</title>
-    <style>.content {
+
+    <style>
+
+        .card1 {
             background-color: #fff;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
@@ -51,10 +80,10 @@ if (isset($_POST["submit"])) {
             width: 300px;
           justify-content: center;
             text-align: center;
-            height:25vw;
+            height:auto;
         }
-        @media only screen and (max-width: 600px) {
-  .content {
+         @media only screen and (max-width: 600px) {
+  .card1 {
     height: auto;
   }
 }
@@ -121,55 +150,71 @@ if (isset($_POST["submit"])) {
             right: 10px;
             cursor: pointer;
         }
-        }</style>
+       
+    </style>
 </head>
 <body>
+    
     <div class="container1">
         <div class="content">
             <div class="card1">
-                <h2>Shree Guru Datta English Medium School <br><br><span style="color:red; font-weight:600;">Admin Login</span></h2>
+                <h2><span style="color:red; font-weight:600;">Shree Guru Datta English Medium School</span></h2>
+                <h2>Create Sub-Admin</h2>
                 <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
+                    
                     <div class="form-group">
                         <label for="username">Username:</label>
                         <input type="text" id="username" name="username" required>
                     </div>
                     <div class="form-group">
                         <label for="password">Password:</label>
-                        <div class="password-input-container">
-                            <input type="password" id="password" name="password" required>
-                            <button type="button" id="togglePassword">Show</button>
-                        </div>
+                        <input type="password" id="password" name="password" required>
+                        <button type="button" id="togglePassword">Show</button>
                     </div>
-                    <button type="submit" class="submit-btn" name="submit">Submit</button>
                     
+                     <div class="form-group">
+                        <label for="password">Admin Password</label>
+                        <input type="password" id="admin_password" name="admin_password" required>
+                        <button type="button" id="toggleAdminPassword">Show</button>
+                    </div>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn" id = 'btn_submit'>Submit</button>
                 </form>
-                <a href="add_admin.php" style="margin-top:20px;">Register Admin?</a>
-                <?php
-                // Display login error message if set
-                if (isset($loginError)) {
-                    echo "<p>$loginError</p>";
-                }
-                ?>
             </div>
         </div>
     </div>
 
-    <script>
+
+
+
+
+
+            
+       <script>
         // Function to toggle password visibility
         function togglePasswordVisibility(inputId, toggleId) {
             var passwordInput = document.getElementById(inputId);
-            var toggleIcon = document.getElementById(toggleId);
+            var toggleButton = document.getElementById(toggleId);
 
             // Toggle the password input type between "password" and "text"
             passwordInput.type = passwordInput.type === "password" ? "text" : "password";
-            // Toggle the button text between "Show Password" and "Hide Password"
-            toggleIcon.textContent = passwordInput.type === "password" ? "Show" : "Hide";
+            // Toggle the button text between "Show" and "Hide"
+            toggleButton.textContent = passwordInput.type === "password" ? "Show " : "Hide " ;
         }
 
-        // Add event listener for password toggle
+        // Add event listener for password toggle button
         document.getElementById('togglePassword').addEventListener('click', function () {
             togglePasswordVisibility('password', 'togglePassword');
         });
+
+        // Add event listener for admin password toggle button
+        document.getElementById('toggleAdminPassword').addEventListener('click', function () {
+            togglePasswordVisibility('admin_password', 'toggleAdminPassword');
+        });
     </script>
+            
+
+        
 </body>
 </html>
