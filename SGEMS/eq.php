@@ -1,34 +1,40 @@
 <?php
-// Database connection
 $servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "test1";
+$username = "shreegur_enquiry";
+$password = "SGEMS@12345";
+$dbname = "shreegur_queries";
 
-// Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Escape user inputs for security
-    $name = $conn->real_escape_string($_POST['name']);
-    $phone = $conn->real_escape_string($_POST['phone']);
-    $que = $conn->real_escape_string($_POST['que']);
+    $name = $_POST['name'];
+    $phone = $_POST['phone'];
+    $que = $_POST['que'];
 
-    // Insert query for the 'enquiry' table
-    $sql = "INSERT INTO enquiry (Name, Mobile, Question) VALUES ('$name', '$phone', '$que')";
+    $stmt = $conn->prepare("INSERT INTO enquiry (Name, Mobile, Question) VALUES (?, ?, ?)");
 
-    if ($conn->query($sql) === TRUE) {
-        echo "New record created successfully";
-    } else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
+    if ($stmt === false) {
+        die("Error: " . $conn->error);
     }
+
+    $stmt->bind_param("sss", $name, $phone, $que);
+
+    $result = $stmt->execute();
+
+    if ($result === false) {
+        die("Error: " . $stmt->error);
+    } else {
+        echo '<script>alert("Thank You for your enquiry! Your query will be answered shortly on WhatsApp.");</script>';
+        echo '<script>window.setTimeout(function(){ window.location.href = "index.html"; }, 0);</script>';
+        exit();
+    }
+
+    $stmt->close();
 }
 
-// Close connection
 $conn->close();
-
+?>
